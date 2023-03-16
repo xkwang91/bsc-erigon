@@ -35,6 +35,7 @@ require (
 	github.com/edsrzf/mmap-go v1.1.0
 	github.com/emicklei/dot v1.4.2
 	github.com/emirpasic/gods v1.18.1
+	github.com/ethereum/go-ethereum v1.11.4
 	github.com/fjl/gencodec v0.0.0-20220412091415-8bb9e558978c
 	github.com/gballet/go-verkle v0.0.0-20221121182333-31427a1f2d35
 	github.com/goccy/go-json v0.9.11
@@ -136,13 +137,13 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
+	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
-	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/garslo/gogen v0.0.0-20170307003452-d6ebae628c7c // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
