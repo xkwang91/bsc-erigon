@@ -46,7 +46,11 @@ var (
 
 	PlanckUpgrade = make(map[string]*Upgrade)
 
+<<<<<<< HEAD
 	LubanUpgrade = make(map[string]*Upgrade)
+=======
+	BonehUpgrade = make(map[string]*Upgrade)
+>>>>>>> eb2f00f99 (Fast finality support (#22))
 
 	CalcuttaUpgrade = make(map[string]*Upgrade)
 
