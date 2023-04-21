@@ -46,11 +46,7 @@ var (
 
 	PlanckUpgrade = make(map[string]*Upgrade)
 
-<<<<<<< HEAD
 	LubanUpgrade = make(map[string]*Upgrade)
-=======
-	BonehUpgrade = make(map[string]*Upgrade)
->>>>>>> eb2f00f99 (Fast finality support (#22))
 
 	CalcuttaUpgrade = make(map[string]*Upgrade)
 
@@ -583,9 +579,8 @@ func init() {
 			},
 		},
 	}
-
-	LubanUpgrade[networkname.BSCChainName] = &Upgrade{
-		UpgradeName: "luban",
+	BonehUpgrade[networkname.BSCChainName] = &Upgrade{
+		UpgradeName: "boneh",
 		Configs: []*UpgradeConfig{
 			{
 				ContractAddr: ValidatorContract,
@@ -677,6 +672,7 @@ func init() {
 		},
 	}
 }
+
 
 func UpgradeBuildInSystemContract(config *chain.Config, blockNumber *big.Int, statedb *state.IntraBlockState) {
 	if config == nil || blockNumber == nil || statedb == nil {
