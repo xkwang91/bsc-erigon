@@ -579,8 +579,9 @@ func init() {
 			},
 		},
 	}
-	BonehUpgrade[networkname.BSCChainName] = &Upgrade{
-		UpgradeName: "boneh",
+
+	LubanUpgrade[networkname.BSCChainName] = &Upgrade{
+		UpgradeName: "luban",
 		Configs: []*UpgradeConfig{
 			{
 				ContractAddr: ValidatorContract,
@@ -672,7 +673,6 @@ func init() {
 		},
 	}
 }
-
 
 func UpgradeBuildInSystemContract(config *chain.Config, blockNumber *big.Int, statedb *state.IntraBlockState) {
 	if config == nil || blockNumber == nil || statedb == nil {
