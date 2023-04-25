@@ -256,7 +256,7 @@ func getNextTransactions(
 func filterBadTransactions(transactions []types.Transaction, config chain.Config, blockNumber uint64, baseFee *big.Int, simulationTx *memdb.MemoryMutation) ([]types.Transaction, error) {
 	initialCnt := len(transactions)
 	var filtered []types.Transaction
-	gasBailout := false
+	gasBailout := config.Consensus == chain.ParliaConsensus
 
 	missedTxs := 0
 	noSenderCnt := 0

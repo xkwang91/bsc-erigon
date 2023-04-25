@@ -56,6 +56,7 @@ import (
 	"github.com/ledgerwatch/erigon/consensus/bor"
 	"github.com/ledgerwatch/erigon/consensus/clique"
 	"github.com/ledgerwatch/erigon/consensus/ethash"
+	"github.com/ledgerwatch/erigon/consensus/parlia"
 	"github.com/ledgerwatch/erigon/consensus/serenity"
 	"github.com/ledgerwatch/erigon/core"
 	"github.com/ledgerwatch/erigon/core/rawdb"
@@ -205,6 +206,11 @@ func NewBackend(stack *node.Node, config *ethconfig.Config, logger log.Logger) (
 	config.Snapshot.Enabled = config.Sync.UseSnapshots
 
 	log.Info("Initialised chain configuration", "config", chainConfig, "genesis", genesis.Hash())
+
+	// Apply special hacks for BSC params
+	if chainConfig.Parlia != nil {
+		params.ApplyBinanceSmartChainParams()
+	}
 
 	if err := chainKv.Update(context.Background(), func(tx kv.RwTx) error {
 		if err = stagedsync.UpdateMetrics(tx); err != nil {
@@ -412,6 +418,8 @@ func NewBackend(stack *node.Node, config *ethconfig.Config, logger log.Logger) (
 		consensusConfig = &config.Clique
 	} else if chainConfig.Aura != nil {
 		consensusConfig = &config.Aura
+	} else if chainConfig.Parlia != nil {
+		consensusConfig = &config.Parlia
 	} else if chainConfig.Bor != nil {
 		consensusConfig = &config.Bor
 	} else {
@@ -716,6 +724,25 @@ func (s *Ethereum) StartMining(ctx context.Context, db kv.RwDB, mining *stagedsy
 
 		clq.Authorize(eb, func(_ libcommon.Address, mimeType string, message []byte) ([]byte, error) {
 			return crypto.Sign(crypto.Keccak256(message), cfg.SigKey)
+		})
+	}
+
+	var prl *parlia.Parlia
+	if p, ok := s.engine.(*parlia.Parlia); ok {
+		prl = p
+	} else if cl, ok := s.engine.(*serenity.Serenity); ok {
+		if p, ok := cl.InnerEngine().(*parlia.Parlia); ok {
+			prl = p
+		}
+	}
+	if prl != nil {
+		if cfg.SigKey == nil {
+			log.Error("Etherbase account unavailable locally", "err", err)
+			return fmt.Errorf("signer missing: %w", err)
+		}
+
+		prl.Authorize(eb, func(validator libcommon.Address, payload []byte, chainId *big.Int) ([]byte, error) {
+			return crypto.Sign(payload, cfg.SigKey)
 		})
 	}
 

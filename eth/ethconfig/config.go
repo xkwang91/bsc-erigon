@@ -206,6 +206,7 @@ type Config struct {
 
 	Clique params.ConsensusSnapshotConfig
 	Aura   chain.AuRaConfig
+	Parlia chain.ParliaConfig
 	Bor    chain.BorConfig
 
 	// Transaction pool options
@@ -268,6 +269,7 @@ type Sync struct {
 var ChainsWithSnapshots = map[string]struct{}{
 	networkname.MainnetChainName:    {},
 	networkname.SepoliaChainName:    {},
+	networkname.BSCChainName:        {},
 	networkname.GoerliChainName:     {},
 	networkname.MumbaiChainName:     {},
 	networkname.BorMainnetChainName: {},

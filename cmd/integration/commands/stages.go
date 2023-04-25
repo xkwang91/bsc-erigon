@@ -1292,6 +1292,11 @@ func newDomains(ctx context.Context, db kv.RwDB, stepSize uint64, mode libstate.
 	}
 	//log.Info("Initialised chain configuration", "config", chainConfig)
 
+	// Apply special hacks for BSC params
+	if chainConfig.Parlia != nil {
+		params.ApplyBinanceSmartChainParams()
+	}
+
 	var batchSize datasize.ByteSize
 	must(batchSize.UnmarshalText([]byte(batchSizeStr)))
 
@@ -1326,6 +1331,11 @@ func newSync(ctx context.Context, db kv.RwDB, miningConfig *params.MiningConfig)
 		panic(genesisErr)
 	}
 	//log.Info("Initialised chain configuration", "config", chainConfig)
+
+	// Apply special hacks for BSC params
+	if chainConfig.Parlia != nil {
+		params.ApplyBinanceSmartChainParams()
+	}
 
 	var batchSize datasize.ByteSize
 	must(batchSize.UnmarshalText([]byte(batchSizeStr)))
@@ -1434,6 +1444,8 @@ func initConsensusEngine(cc *chain2.Config, datadir string, db kv.RwDB) (engine 
 		consensusConfig = params.CliqueSnapshot
 	} else if cc.Aura != nil {
 		consensusConfig = &config.Aura
+	} else if cc.Parlia != nil {
+		consensusConfig = &config.Parlia
 	} else if cc.Bor != nil {
 		consensusConfig = &config.Bor
 	} else {

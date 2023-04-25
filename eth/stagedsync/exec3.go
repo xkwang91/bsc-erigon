@@ -475,6 +475,9 @@ func ExecV3(ctx context.Context,
 		applyWorker.ResetTx(applyTx)
 	}
 
+	_, isPoSa := cfg.engine.(consensus.PoSA)
+	//isBor := cfg.chainConfig.Bor != nil
+
 	slowDownLimit := time.NewTicker(time.Second)
 	defer slowDownLimit.Stop()
 
@@ -589,7 +592,7 @@ Loop:
 				count++
 				applyWorker.RunTxTask(txTask)
 				if err := func() error {
-					if txTask.Final {
+					if txTask.Final && !isPoSa {
 						gasUsed += txTask.UsedGas
 						if gasUsed != txTask.Header.GasUsed {
 							if txTask.BlockNum > 0 { //Disable check for genesis. Maybe need somehow improve it in future - to satisfy TestExecutionSpec

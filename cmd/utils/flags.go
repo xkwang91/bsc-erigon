@@ -129,7 +129,7 @@ var (
 	}
 	SnapshotFlag = cli.BoolFlag{
 		Name:  "snapshots",
-		Usage: `Default: use snapshots "true" for Mainnet, Goerli, Gnosis Chain and Chiado. use snapshots "false" in all other cases`,
+		Usage: `Default: use snapshots "true" for BSC, Mainnet and Goerli. use snapshots "false" in all other cases`,
 		Value: true,
 	}
 	InternalConsensusFlag = cli.BoolFlag{
@@ -1062,7 +1062,11 @@ func setEtherbase(ctx *cli.Context, cfg *ethconfig.Config) {
 		setSigKey(ctx, cfg)
 	}
 
-	chainsWithValidatorMode := map[string]bool{}
+	chainsWithValidatorMode := map[string]bool{
+		networkname.BSCChainName:    true,
+		networkname.RialtoChainName: true,
+		networkname.ChapelChainName: true,
+	}
 	if _, ok := chainsWithValidatorMode[ctx.String(ChainFlag.Name)]; ok || ctx.IsSet(MinerSigningKeyFileFlag.Name) {
 		if ctx.IsSet(MiningEnabledFlag.Name) && !ctx.IsSet(MinerSigningKeyFileFlag.Name) {
 			panic(fmt.Sprintf("Flag --%s is required in %s chain with --%s flag", MinerSigningKeyFileFlag.Name, ChainFlag.Name, MiningEnabledFlag.Name))
@@ -1354,6 +1358,10 @@ func setClique(ctx *cli.Context, cfg *params.ConsensusSnapshotConfig, datadir st
 	}
 }
 
+func setParlia(ctx *cli.Context, cfg *chain.ParliaConfig, datadir string) {
+	cfg.DBPath = filepath.Join(datadir, "parlia")
+}
+
 func setBorConfig(ctx *cli.Context, cfg *ethconfig.Config) {
 	cfg.HeimdallURL = ctx.String(HeimdallURLFlag.Name)
 	cfg.WithoutHeimdall = ctx.Bool(WithoutHeimdallFlag.Name)
@@ -1508,6 +1516,7 @@ func SetEthConfig(ctx *cli.Context, nodeConfig *nodecfg.Config, cfg *ethconfig.C
 
 	setEthash(ctx, nodeConfig.Dirs.DataDir, cfg)
 	setClique(ctx, &cfg.Clique, nodeConfig.Dirs.DataDir)
+	setParlia(ctx, &cfg.Parlia, nodeConfig.Dirs.DataDir)
 	setMiner(ctx, &cfg.Miner)
 	setWhitelist(ctx, cfg)
 	setBorConfig(ctx, cfg)
