@@ -88,13 +88,6 @@ var (
 
 	RialtoChainConfig = readChainSpec("chainspecs/rialto.json")
 
-<<<<<<< HEAD
-=======
-	SokolChainConfig = readChainSpec("chainspecs/sokol.json")
-
-	RopstenChainConfig = readChainSpec("chainspecs/ropsten.json")
-
->>>>>>> 4e367502e (Support bep-221: implement cometBFT light block validation (#28))
 	// AllProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the main net protocol.
 	AllProtocolChanges = &chain.Config{

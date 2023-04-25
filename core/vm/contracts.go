@@ -17,7 +17,6 @@
 package vm
 
 import (
-	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"math/big"
