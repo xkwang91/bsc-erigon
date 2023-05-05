@@ -874,11 +874,6 @@ func (p *Parlia) Prepare(chain consensus.ChainHeaderReader, header *types.Header
 }
 
 func (p *Parlia) verifyValidators(header, parentHeader *types.Header, state *state.IntraBlockState) error {
-
-	// if header.Number.Uint64()%p.config.Epoch != 0 {
-	// 	return nil
-	// }
-
 	if (header.Number.Uint64()+1)%p.config.Epoch == 0 {
 		newValidators, voteAddressMap, err := p.getCurrentValidators(header, state)
 		if err != nil {
@@ -894,17 +889,10 @@ func (p *Parlia) verifyValidators(header, parentHeader *types.Header, state *sta
 	}
 
 	newValidators, voteAddressMap := p.newValidators, p.voteAddressMapmap
-	log.Warn("p", "parent", parentHeader.Number.Uint64(), "hash", parentHeader.Hash())
-	log.Warn("h", "header", header.Number.Uint64(), "hash", header.Hash())
-	// newValidators, voteAddressMap, err := p.getCurrentValidators(header, state)
-	// if err != nil {
-	// 	return err
-	// }
 	// sort validator by address
 	sort.Sort(validatorsAscending(newValidators))
 	var validatorsBytes []byte
 	validatorsNumber := len(newValidators)
-	log.Info("validatorsNumber len", "validatorsNumber", validatorsNumber)
 
 	if !p.chainConfig.IsLuban(header.Number.Uint64()) {
 		validatorsBytes = make([]byte, validatorsNumber*validatorBytesLengthBeforeLuban)
@@ -913,7 +901,6 @@ func (p *Parlia) verifyValidators(header, parentHeader *types.Header, state *sta
 		}
 	} else {
 		if uint8(validatorsNumber) != header.Extra[extraVanity] {
-			log.Warn("uint8(validatorsNumber) != header.Extra[extraVanity]", "uint8(validatorsNumber)", uint8(validatorsNumber), "header.Extra[extraVanity]", header.Extra[extraVanity])
 			return errMismatchingEpochValidators
 		}
 		validatorsBytes = make([]byte, validatorsNumber*validatorBytesLength)
@@ -1378,10 +1365,6 @@ func (p *Parlia) getCurrentValidators(header *types.Header, ibs *state.IntraBloc
 	}
 
 	voteAddrmap := make(map[libcommon.Address]*types.BLSPublicKey, len(valSet))
-	if header.Number.Uint64() == 29517599 {
-		log.Info("header.Number.Uint64() == 29517599")
-		log.Info("valSet len", "len(valSet)", len(valSet))
-	}
 	for i := 0; i < len(valSet); i++ {
 		voteAddrmap[valSet[i]] = &(voteAddrSet)[i]
 	}
