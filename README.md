@@ -4,7 +4,7 @@ Erigon is an implementation of Ethereum (execution client with light client for 
 frontier. [Archive Node](https://ethereum.org/en/developers/docs/nodes-and-clients/archive-nodes/#what-is-an-archive-node)
 by default.
 
-![Build status](https://github.com/ledgerwatch/erigon/actions/workflows/ci.yml/badge.svg)
+![Build status](https://github.com/node-real/bsc-erigon/actions/workflows/ci.yml/badge.svg)
 
 ![Coverage](https://gist.githubusercontent.com/revitteth/ee38e9beb22353eef6b88f2ad6ed7aa9/raw/badge.svg)
 
@@ -79,7 +79,7 @@ Usage
 For building the latest stable release (this will be suitable for most users just wanting to run a node):
 
 ```sh
-git clone --branch stable --single-branch https://github.com/ledgerwatch/erigon.git
+git clone --branch devel --single-branch https://github.com/node-real/bsc-erigon.git
 cd erigon
 make erigon
 ./build/bin/erigon
@@ -90,7 +90,7 @@ You can check [the list of releases](https://github.com/node-real/bsc-erigon/rel
 For building the bleeding edge development branch:
 
 ```sh
-git clone --recurse-submodules https://github.com/ledgerwatch/erigon.git
+git clone --recurse-submodules https://github.com/node-real/bsc-erigon.git
 cd erigon
 git checkout devel
 make erigon
@@ -170,7 +170,7 @@ If you would like to give Erigon a try, but do not have spare 2TB on your drive,
 of the public testnets, Görli. It syncs much quicker, and does not take so much disk space:
 
 ```sh
-git clone --recurse-submodules -j8 https://github.com/ledgerwatch/erigon.git
+git clone --recurse-submodules -j8 https://github.com/node-real/bsc-erigon.git
 cd erigon
 make erigon
 ./build/bin/erigon --datadir=<your_datadir> --chain=goerli
