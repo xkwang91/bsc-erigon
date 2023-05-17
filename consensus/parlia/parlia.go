@@ -613,11 +613,11 @@ func (p *Parlia) verifyCascadingFields(chain consensus.ChainHeaderReader, header
 
 	// Verify vote attestation for fast finality.
 	if err := p.verifyVoteAttestation(chain, header, parents); err != nil {
+		log.Warn("Verify vote attestation failed", "error", err, "hash", header.Hash(), "number", header.Number,
+			"parent", header.ParentHash, "coinbase", header.Coinbase, "extra", common.Bytes2Hex(header.Extra))
 		if chain.Config().IsPlato(header.Number.Uint64()) {
 			return err
 		}
-		log.Warn("Verify vote attestation failed", "error", err, "hash", header.Hash(), "number", header.Number,
-			"parent", header.ParentHash, "coinbase", header.Coinbase, "extra", common.Bytes2Hex(header.Extra))
 	}
 
 	// All basic checks passed, verify the seal and return
@@ -1605,7 +1605,7 @@ func (p *Parlia) GetJustifiedNumberAndHash(chain consensus.ChainHeaderReader, he
 	}
 	snap, err := p.snapshot(chain, header.Number.Uint64(), header.Hash(), nil, true)
 	if err != nil {
-		log.Error("Unexpected error when getting snapshot",
+		log.Error("GetJustifiedNumberAndHash snapshot",
 			"error", err, "blockNumber", header.Number.Uint64(), "blockHash", header.Hash())
 		return 0, libcommon.Hash{}, err
 	}
@@ -1636,7 +1636,7 @@ func (p *Parlia) GetFinalizedHeader(chain consensus.ChainHeaderReader, header *t
 
 	snap, err := p.snapshot(chain, header.Number.Uint64(), header.Hash(), nil, true)
 	if err != nil {
-		log.Error("Unexpected error when getting snapshot",
+		log.Error("GetFinalizedHeader snapshot",
 			"error", err, "blockNumber", header.Number.Uint64(), "blockHash", header.Hash())
 		return nil
 	}
@@ -1648,8 +1648,8 @@ func (p *Parlia) GetFinalizedHeader(chain consensus.ChainHeaderReader, header *t
 
 		snap, err = p.snapshot(chain, snap.Attestation.SourceNumber, snap.Attestation.SourceHash, nil, true)
 		if err != nil {
-			log.Error("Unexpected error when getting snapshot",
-				"error", err, "blockNumber", snap.Attestation.SourceNumber, "blockHash", snap.Attestation.SourceHash)
+			log.Error("GetFinalizedHeader snapshot",
+				"error", err, "SourceNumber", snap.Attestation.SourceNumber, "SourceHash", snap.Attestation.SourceHash)
 			return nil
 		}
 	}
