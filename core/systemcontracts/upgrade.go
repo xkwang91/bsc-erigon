@@ -771,6 +771,10 @@ func UpgradeBuildInSystemContract(config *chain.Config, blockNumber *big.Int, st
 		applySystemContractUpgrade(LubanUpgrade[config.ChainName], blockNumber, statedb, logger)
 	}
 
+	if config.IsOnPlato(blockNumber) {
+		applySystemContractUpgrade(PlatoUpgrade[config.ChainName], blockNumber, statedb, logger)
+	}
+
 	/*
 		apply other upgrades
 	*/
