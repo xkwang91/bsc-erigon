@@ -1011,7 +1011,7 @@ func (p *Parlia) finalize(header *types.Header, state *state.IntraBlockState, tx
 	}
 
 	if p.chainConfig.IsPlato(header.Number.Uint64()) {
-		if systemTxs, _, _, err = p.distributeFinalityReward(chain, state, header, txs, systemTxs, &header.GasUsed, false); err != nil {
+		if systemTxs, _, receipts, err = p.distributeFinalityReward(chain, state, header, txs, receipts, systemTxs, &header.GasUsed, false); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -1024,13 +1024,15 @@ func (p *Parlia) finalize(header *types.Header, state *state.IntraBlockState, tx
 	return txs, receipts, nil
 }
 
-func (p *Parlia) distributeFinalityReward(chain consensus.ChainHeaderReader, state *state.IntraBlockState, header *types.Header, txs types.Transactions, systemTxs types.Transactions,
-	usedGas *uint64, mining bool) (types.Transactions, types.Transaction, *types.Receipt, error) {
+func (p *Parlia) distributeFinalityReward(chain consensus.ChainHeaderReader, state *state.IntraBlockState, header *types.Header,
+	txs types.Transactions, receipts types.Receipts, systemTxs types.Transactions,
+	usedGas *uint64, mining bool) (types.Transactions,
+	types.Transaction, types.Receipts, error) {
 	currentHeight := header.Number.Uint64()
 	epoch := p.config.Epoch
 	chainConfig := chain.Config()
 	if currentHeight%epoch != 0 {
-		return nil, nil, nil, nil
+		return nil, nil, receipts, nil
 	}
 
 	head := header
@@ -1093,8 +1095,11 @@ func (p *Parlia) distributeFinalityReward(chain consensus.ChainHeaderReader, sta
 		log.Error("Unable to pack tx for distributeFinalityReward", "error", err)
 		return nil, nil, nil, err
 	}
-	return p.applyTransaction(header.Coinbase, systemcontracts.ValidatorContract, u256.Num0, data, state, header,
+	// (types.Transactions, types.Transaction, *types.Receipt, error)
+	outTxs, tx, receipt, err := p.applyTransaction(header.Coinbase, systemcontracts.ValidatorContract, u256.Num0, data, state, header,
 		len(txs), systemTxs, usedGas, mining)
+	receipts = append(receipts, receipt)
+	return outTxs, tx, receipts, err
 }
 
 // FinalizeAndAssemble runs any post-transaction state modifications (e.g. block
