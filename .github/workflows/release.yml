@@ -24,16 +24,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: dockerhub-login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB }}
-          password: ${{ secrets.DOCKERHUB_KEY }}
       - name: ghcr-login
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare
@@ -51,5 +46,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.prepare.outputs.tag_name }}
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_KEY }}
