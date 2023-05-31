@@ -215,11 +215,11 @@ func (s *Snapshot) updateAttestation(header *types.Header, chainConfig *chain.Co
 	}
 
 	// Update attestation
-	s.Attestation = &types.VoteData{
-		SourceNumber: attestation.Data.SourceNumber,
-		SourceHash:   attestation.Data.SourceHash,
-		TargetNumber: attestation.Data.TargetNumber,
-		TargetHash:   attestation.Data.TargetHash,
+	if s.Attestation != nil && attestation.Data.SourceNumber+1 != attestation.Data.TargetNumber {
+		s.Attestation.TargetNumber = attestation.Data.TargetNumber
+		s.Attestation.TargetHash = attestation.Data.TargetHash
+	} else {
+		s.Attestation = attestation.Data
 	}
 }
 

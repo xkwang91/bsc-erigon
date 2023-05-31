@@ -13,7 +13,6 @@ const (
 	BLSSignatureLength = 96
 
 	MaxAttestationExtraLength = 256
-	NaturallyFinalizedDist    = 21 // The distance to naturally finalized a block
 )
 
 type BLSPublicKey [BLSPublicKeyLength]byte
