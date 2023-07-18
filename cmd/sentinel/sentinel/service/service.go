@@ -166,12 +166,15 @@ func (s *SentinelServer) GetPeers(_ context.Context, _ *sentinelrpc.EmptyMessage
 }
 
 func (s *SentinelServer) ListenToGossip() {
+	refreshTicker := time.NewTicker(100 * time.Millisecond)
+	defer refreshTicker.Stop()
 	for {
 		select {
 		case pkt := <-s.sentinel.RecvGossip():
 			s.handleGossipPacket(pkt)
 		case <-s.ctx.Done():
 			return
+		case <-refreshTicker.C:
 		}
 	}
 }
@@ -203,10 +206,6 @@ func (s *SentinelServer) handleGossipPacket(pkt *pubsub.Message) error {
 		s.gossipNotifier.notify(sentinelrpc.GossipType_ProposerSlashingGossipType, data, string(textPid))
 	} else if strings.Contains(*pkt.Topic, string(sentinel.AttesterSlashingTopic)) {
 		s.gossipNotifier.notify(sentinelrpc.GossipType_AttesterSlashingGossipType, data, string(textPid))
-	} else if strings.Contains(*pkt.Topic, string(sentinel.LightClientFinalityUpdateTopic)) {
-		s.gossipNotifier.notify(sentinelrpc.GossipType_LightClientFinalityUpdateGossipType, data, string(textPid))
-	} else if strings.Contains(*pkt.Topic, string(sentinel.LightClientOptimisticUpdateTopic)) {
-		s.gossipNotifier.notify(sentinelrpc.GossipType_LightClientOptimisticUpdateGossipType, data, string(textPid))
 	}
 	return nil
 }
