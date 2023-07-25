@@ -20,6 +20,10 @@
     "gibbsBlock": 23846001,
     "planckBlock": 27281024,
     "lubanBlock": 29020050,
+    "platoBlock": 30720096,
+    "berlinBlock":31302048,
+    "londonBlock": 31302048,
+    "hertzBlock": 31302048,
     "parlia": {
         "DBPath": "",
         "InMemory": false,
