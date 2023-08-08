@@ -550,7 +550,7 @@ func (hd *HeaderDownload) InsertHeader(hf FeedHeaderFunc, terminalTotalDifficult
 			log.Info(fmt.Sprintf("[%s] Inserting headers", logPrefix), "progress", hd.highestInDb, "queue", hd.insertQueue.Len())
 		default:
 		}
-		td, err := hf(link.header, link.headerRaw, link.hash, link.blockHeight)
+		td, err := hf(link.header, link.headerRaw, link.hash, hd.highestInDb)
 		if err != nil {
 			return false, false, 0, lastTime, err
 		}
@@ -794,8 +794,8 @@ func (hd *HeaderDownload) addHeaderAsLink(h ChainSegmentHeader, persisted bool) 
 }
 
 func (hi *HeaderInserter) NewFeedHeaderFunc(db kv.StatelessRwTx, headerReader services.HeaderReader, engine consensus.Engine, config chain.Config, consensusHeaderReader consensus.ChainHeaderReader) FeedHeaderFunc {
-	return func(header *types.Header, headerRaw []byte, hash libcommon.Hash, blockHeight uint64) (*big.Int, error) {
-		return hi.FeedHeaderPoW(db, headerReader, header, headerRaw, hash, blockHeight, engine, config, consensusHeaderReader)
+	return func(header *types.Header, headerRaw []byte, hash libcommon.Hash, highest uint64) (*big.Int, error) {
+		return hi.FeedHeaderPoW(db, headerReader, header, headerRaw, hash, highest, engine, config, consensusHeaderReader)
 	}
 }
 
@@ -852,11 +852,12 @@ func (hi *HeaderInserter) ForkingPoint(db kv.StatelessRwTx, header, parent *type
 	return
 }
 
-func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader services.HeaderReader, header *types.Header, headerRaw []byte, hash libcommon.Hash, blockHeight uint64, engine consensus.Engine, config chain.Config, consensusHeaderReader consensus.ChainHeaderReader) (td *big.Int, err error) {
+func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader services.HeaderReader, header *types.Header, headerRaw []byte, hash libcommon.Hash, highest uint64, engine consensus.Engine, config chain.Config, consensusHeaderReader consensus.ChainHeaderReader) (td *big.Int, err error) {
 	if hash == hi.prevHash {
 		// Skip duplicates
 		return nil, nil
 	}
+	blockHeight := header.Number.Uint64()
 	oldH, err := headerReader.Header(context.Background(), db, hash, blockHeight)
 	if err != nil {
 		return nil, err
@@ -883,18 +884,18 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 	reorgFunc := func() (bool, error) {
 		if p, ok := engine.(consensus.PoSA); ok {
 			justifiedNumber, curJustifiedNumber := uint64(0), uint64(0)
-			if config.IsPlato(header.Number.Uint64()) {
+			if config.IsPlato(blockHeight) {
 				if justifiedNumberGot, _, err := p.GetJustifiedNumberAndHash(consensusHeaderReader, header); err == nil {
 					justifiedNumber = justifiedNumberGot
 				}
 			}
-			if config.IsPlato(hi.highest) {
-				if highestHeader, err := headerReader.Header(context.Background(), db, hi.highestHash, hi.highest); highestHeader != nil {
+			if config.IsPlato(highest) {
+				if highestHeader, err := headerReader.HeaderByNumber(context.Background(), db, highest); highestHeader != nil {
 					if justifiedNumberGot, _, err := p.GetJustifiedNumberAndHash(consensusHeaderReader, highestHeader); err == nil {
 						curJustifiedNumber = justifiedNumberGot
 					}
 				} else {
-					log.Error("FeedHeaderPoW Get highestHeader fail", "err", err, "hi.highest", hi.highest, "hi.highestHash", hi.highestHash)
+					log.Error("FeedHeaderPoW Get highestHeader fail", "err", err, "hd.highestInDb", hi.highest)
 				}
 			}
 			if justifiedNumber == curJustifiedNumber {
@@ -917,12 +918,12 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 	if err != nil {
 		log.Error("reorg Error", "Error", err)
 	}
-	canonicalHash, err := rawdb.ReadCanonicalHash(db, header.Number.Uint64())
+	canonicalHash, err := rawdb.ReadCanonicalHash(db, blockHeight)
 	if err != nil {
 		log.Warn(fmt.Sprintf("[%s] Get canonicalHash err (IntermediateHashesAt)", hi.logPrefix, "err", err))
 		return nil, err
 	}
-	if header.Hash() == canonicalHash && header.Number.Uint64() <= hi.highest {
+	if hash == canonicalHash && blockHeight <= hi.highest {
 		reorg = false
 	}
 	if reorg {
