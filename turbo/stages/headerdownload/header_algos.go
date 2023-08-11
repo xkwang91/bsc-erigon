@@ -1023,6 +1023,9 @@ func (hd *HeaderDownload) ProcessHeader(sh ChainSegmentHeader, newBlock bool, pe
 	if _, ok := hd.links[sh.Hash]; ok {
 		hd.stats.Duplicates++
 		// Duplicate
+		if sh.Hash == hd.highestHashInDb {
+			delete(hd.links, sh.Hash)
+		}
 		return false
 	}
 	parent, foundParent := hd.links[sh.Header.ParentHash]
