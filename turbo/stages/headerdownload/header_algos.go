@@ -57,6 +57,7 @@ const POSPandaBanner = `
  o88o     o8888o'Y8bod8P'  "888"o888o    '8'    'Y888""8o  "888"'Y8bod8P''Y8bod88P"
 
 `
+const DuplicatesLimit = 10
 
 // Implements sort.Interface so we can sort the incoming header in the message by block height
 type HeadersReverseSort []ChainSegmentHeader
@@ -1023,6 +1024,9 @@ func (hd *HeaderDownload) ProcessHeader(sh ChainSegmentHeader, newBlock bool, pe
 	if _, ok := hd.links[sh.Hash]; ok {
 		hd.stats.Duplicates++
 		// Duplicate
+		if hd.stats.Duplicates > DuplicatesLimit && sh.Number == hd.highestInDb {
+			delete(hd.links, sh.Hash)
+		}
 		return false
 	}
 	parent, foundParent := hd.links[sh.Header.ParentHash]
