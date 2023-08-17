@@ -1024,7 +1024,7 @@ func (hd *HeaderDownload) ProcessHeader(sh ChainSegmentHeader, newBlock bool, pe
 	if _, ok := hd.links[sh.Hash]; ok {
 		hd.stats.Duplicates++
 		// Duplicate
-		if hd.stats.Duplicates > DuplicatesLimit && sh.Number == hd.highestInDb {
+		if hd.stats.Duplicates > DuplicatesLimit && (sh.Number == hd.highestInDb+1 || sh.Number == hd.highestInDb) {
 			delete(hd.links, sh.Hash)
 		}
 		return false
