@@ -720,6 +720,7 @@ func readCallTraces(chaindata string, block uint64) error {
 		if blockNum == block {
 			fmt.Printf("%x\n", v)
 		}
+		fmt.Printf("blocknum %v\n", blockNum)
 		count++
 	}
 	fmt.Printf("Found %d records\n", count)
@@ -734,7 +735,7 @@ func readCallTraces(chaindata string, block uint64) error {
 		if err != nil {
 			return err
 		}
-		//fmt.Printf("%x: %d\n", k, bm.ToArray())
+		fmt.Printf("%x: %d\n", k, bm.ToArray())
 	}
 	if err != nil {
 		return err
