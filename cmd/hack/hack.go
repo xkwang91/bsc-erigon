@@ -713,15 +713,10 @@ func readCallTraces(chaindata string, block uint64) error {
 	var v []byte
 	count := 0
 	// seek to the block
-	buf := make([]byte, 8)
-	l := binary.PutUvarint(buf, block)
-	for i := 0; i < l; i++ {
-		buf[7-i] = buf[l-1-i]
-	}
-	for i := 0; i < 8-l; i++ {
-		buf[i] = 0
-	}
-	fmt.Printf("%x\n", buf)
+	s := fmt.Sprintf("%016x", block)
+
+	fmt.Printf("%v\n", s)
+	buf := []byte(s)
 
 	for k, v, err = traceCursor.Seek(buf); err == nil && bytes.HasPrefix(k, buf); k, v, err = traceCursor.Next() {
 		if err != nil {
