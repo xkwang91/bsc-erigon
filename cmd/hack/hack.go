@@ -712,10 +712,22 @@ func readCallTraces(chaindata string, block uint64) error {
 	var k []byte
 	var v []byte
 	count := 0
-	for k, v, err = traceCursor.First(); k != nil; k, v, err = traceCursor.Next() {
+	// seek to the block
+	buf := make([]byte, 8)
+	l := binary.PutUvarint(buf, block)
+	for i := 0; i < l; i++ {
+		buf[7-i] = buf[l-1-i]
+	}
+	for i := 0; i < 8-l; i++ {
+		buf[i] = 0
+	}
+	fmt.Printf("%x\n", buf)
+
+	for k, v, err = traceCursor.Seek(buf); err == nil && bytes.HasPrefix(k, buf); k, v, err = traceCursor.Next() {
 		if err != nil {
 			return err
 		}
+		fmt.Printf("%x\n", k)
 		blockNum := binary.BigEndian.Uint64(k)
 		if blockNum == block {
 			fmt.Printf("%x\n", v)
