@@ -205,6 +205,40 @@ func readAccount(chaindata string, account libcommon.Address) error {
 	return nil
 }
 
+func readAccountCode(chaindata string, account libcommon.Address) error {
+	db := mdbx.MustOpen(chaindata)
+	defer db.Close()
+
+	tx, txErr := db.BeginRo(context.Background())
+	if txErr != nil {
+		return txErr
+	}
+	defer tx.Rollback()
+
+	a, err := state.NewPlainStateReader(tx).ReadAccountData(account)
+	if err != nil {
+		return err
+	} else if a == nil {
+		return fmt.Errorf("acc not found")
+	}
+	fmt.Printf("CodeHash:%x\nIncarnation:%d\n", a.CodeHash, a.Incarnation)
+
+	//从codehash找到code
+	c, err := tx.Cursor(kv.Code)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	k, v, e := c.SeekExact(a.CodeHash[:])
+	if e != nil {
+		return e
+	}
+
+	fmt.Printf("%x => %x\n", k, v)
+
+	return nil
+}
+
 func readAccountAtVersion(chaindata string, account string, block uint64) error {
 	db := mdbx.MustOpen(chaindata)
 	defer db.Close()
@@ -1405,6 +1439,11 @@ func main() {
 
 	case "readAccount":
 		if err := readAccount(*chaindata, libcommon.HexToAddress(*account)); err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
+
+	case "readAccountCode":
+		if err := readAccountCode(*chaindata, libcommon.HexToAddress(*account)); err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
 
