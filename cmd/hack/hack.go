@@ -1302,6 +1302,69 @@ func findLogs(chaindata string, block uint64, blockTotal uint64) error {
 	return nil
 }
 
+func findMintLogs(chaindata string, block uint64, blockTotal uint64) error {
+	mintStrs := []string{
+		"0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f", //v2 mint
+		"0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde", //v3 mint
+	}
+	db := mdbx.MustOpen(chaindata)
+	defer db.Close()
+
+	tx, txErr := db.BeginRo(context.Background())
+	if txErr != nil {
+		return txErr
+	}
+	defer tx.Rollback()
+	logs, err := tx.Cursor(kv.Log)
+	if err != nil {
+		return err
+	}
+	defer logs.Close()
+
+	reader := bytes.NewReader(nil)
+	addrs := map[libcommon.Address]int{}
+
+	for k, v, err := logs.Seek(dbutils.LogKey(block, 0)); k != nil; k, v, err = logs.Next() {
+		if err != nil {
+			return err
+		}
+
+		blockNum := binary.BigEndian.Uint64(k[:8])
+		if blockNum >= block+blockTotal {
+			break
+		}
+
+		var ll types.Logs
+		reader.Reset(v)
+		if err := cbor.Unmarshal(&ll, reader); err != nil {
+			return fmt.Errorf("receipt unmarshal failed: %w, blocl=%d", err, blockNum)
+		}
+
+		for _, l := range ll {
+			// fast check
+			if _, ok := addrs[l.Address]; ok {
+				continue
+			}
+			// find mint event
+			for _, topic := range l.Topics {
+				for i := 0; i < len(mintStrs); i++ {
+					if topic.Hex() == mintStrs[i] {
+						addrs[l.Address] = i + 1
+					}
+				}
+
+			}
+
+		}
+	}
+	fmt.Printf("found %v pair contract\n", len(addrs))
+	for k, v := range addrs {
+		fmt.Printf("%x %d\n", k, v)
+	}
+
+	return nil
+}
+
 func iterate(filename string, prefix string) error {
 	pBytes := common.FromHex(prefix)
 	efFilename := filename + ".ef"
@@ -1546,6 +1609,8 @@ func main() {
 		err = findPrefix(*chaindata)
 	case "findLogs":
 		err = findLogs(*chaindata, uint64(*block), uint64(*blockTotal))
+	case "findMintLogs":
+		err = findMintLogs(*chaindata, uint64(*block), uint64(*blockTotal))
 	case "iterate":
 		err = iterate(*chaindata, *account)
 	case "rmSnKey":
