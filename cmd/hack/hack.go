@@ -713,12 +713,10 @@ func readCallTraces(chaindata string, block uint64) error {
 	var v []byte
 	count := 0
 	// seek to the block
-	var buf [4]byte
+	var buf [8]byte
 	binary.BigEndian.PutUint64(buf[:], block)
 	fmt.Printf("%x\n", buf)
-	var zero [4]byte
-	buf8 := append(zero[:], buf[:]...)
-	fmt.Printf("%x\n", buf8)
+	buf8 := buf[:]
 
 	for k, v, err = traceCursor.Seek(buf8); err == nil && bytes.HasPrefix(k, buf8); k, v, err = traceCursor.Next() {
 		if err != nil {
@@ -1055,7 +1053,12 @@ func scanReceipts3(chaindata string, block uint64) error {
 	if v, err = tx.GetOne(kv.Receipts, key[:]); err != nil {
 		return err
 	}
-	fmt.Printf("%x\n", v)
+	var receipts types.Receipts
+	if err = cbor.Unmarshal(&receipts, bytes.NewReader(v)); err == nil {
+		for i, receipt := range receipts {
+			fmt.Printf("receipt %v: %v\n", i, receipt)
+		}
+	}
 	return nil
 }
 
